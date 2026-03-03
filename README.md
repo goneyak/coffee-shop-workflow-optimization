@@ -1,210 +1,178 @@
-# Base Model: Multi-Stage Queue Simulation of a High-Volume Coffee Shop
-
-## Overview
-
-This project implements a discrete-time stochastic simulation of a high-volume coffee shop workflow to analyze:
-
-* Queue formation dynamics
-* Bottleneck identification
-* Operational improvement leverage points
-
-The system is modeled as a multi-stage serial queue reflecting observed real-world operations.
+# Coffee Shop Workflow Optimization  
+### A Stochastic Queue Simulation for Bottleneck Analysis
 
 ---
 
-## System Architecture
+## Why This Project Exists
 
-Based on field observations, the workflow is represented as a three-stage serial service system:
+High-volume service systems often suffer from congestion, but frontline feedback frequently attributes delays to individual performance rather than structural design.
+
+This project reframes the problem:
+
+> Is delay caused by people — or by system architecture?
+
+Using queueing theory and stochastic simulation, this model quantifies how workflow structure — not individual mistakes — drives congestion in a real-world coffee shop environment.
+
+---
+
+## System Modeled
 
 ```
 Arrival → Till → Shots → Milk → Exit
 ```
 
-Each stage represents a service station:
+Three sequential service stages:
 
-* **Till (μ₀):** Order entry, payment processing, loyalty program handling, upselling
-* **Shots (μ₁):** Espresso extraction
-* **Milk (μ₂):** Milk steaming, specialty drink preparation
+- **Till (μ0):** Order entry, payment handling, loyalty enrollment, upselling  
+- **Shots (μ1):** Espresso extraction  
+- **Milk (μ2):** Milk steaming and specialty preparation  
 
-Customers must pass through each stage sequentially.
-
----
-
-## Stochastic Assumptions
-
-### 1. Arrival Process
-
-Customer arrivals follow a Poisson process:
-
-[
-A_t \sim \text{Poisson}(\lambda \cdot dt)
-]
-
-Where:
-
-* λ = average arrival rate (customers per hour)
-* dt = simulation time step (e.g., 0.005 hours ≈ 18 seconds)
-
-This assumes arrivals are random and memoryless.
+Customers must pass through all stages.
 
 ---
 
-### 2. Service Process
+## Modeling Approach
 
-Each station has a service capacity drawn from a Poisson distribution:
+### Arrival Process
 
-[
-S_{i,t} \sim \text{Poisson}(\mu_i \cdot dt)
-]
+```
+A_t ~ Poisson(λ * dt)
+```
 
-Where:
-
-* μ₀ = Till service rate
-* μ₁ = Shots service rate
-* μ₂ = Milk service rate
-
-This models stochastic variation in service speed.
+Customers arrive randomly with average rate λ (customers/hour).
 
 ---
 
-## State Variables
+### Service Process
 
-At time (t):
+```
+S_{i,t} ~ Poisson(μ_i * dt)
+```
 
-* (q_0): Customers waiting at Till
-* (q_1): Customers waiting at Shots
-* (q_2): Customers waiting at Milk
+Each station has stochastic service capacity:
 
-Total customers in system:
-
-[
-L_t = q_0 + q_1 + q_2
-]
-
----
-
-## Simulation Logic (Per Time Step)
-
-1. New arrivals are added to Till queue.
-2. Till processes customers and passes them to Shots.
-3. Shots processes customers and passes them to Milk.
-4. Milk completes orders and customers exit the system.
-
-Each stage processes:
-
-[
-\text{served} = \min(\text{queue}, \text{service capacity})
-]
+- μ0 = Till rate  
+- μ1 = Shots rate  
+- μ2 = Milk rate  
 
 ---
 
 ## Performance Metrics
 
-### 1. Average System Size
+We evaluate:
 
-[
-\bar{L} = \frac{1}{T} \sum_{t=1}^{T} L_t
-]
+- **Average queue length (L̄)**
+- **Throughput**
+- **Time-in-system proxy (W ≈ L̄ / Throughput)**
 
-Measures average congestion.
+Little’s Law:
 
----
-
-### 2. Throughput
-
-[
-\text{Throughput} = \frac{\text{completed orders}}{\text{simulation time}}
-]
-
-Represents realized service capacity.
+```
+L = λW
+```
 
 ---
 
-### 3. Time-in-System Proxy (Little’s Law)
+# Results & Interpretation
 
-Using Little’s Law:
+### Baseline (Observed Workflow)
 
-[
-L = \lambda W
-]
+| Metric | Value |
+|--------|-------|
+| Avg Queue Length | 14.05 |
+| Throughput | 57.9 orders/hour |
+| Estimated Time in System | ~14.6 minutes |
 
-We approximate:
-
-[
-W \approx \frac{\bar{L}}{\text{throughput}}
-]
-
-This estimates average time a customer spends in the system (not pure waiting time).
+System remains stable (λ < μ0), but queues build during high-utilization periods.
 
 ---
 
-## Utilization and Stability
+### Scenario 1: Improved Till Efficiency
 
-For each station:
+(μ0 increased via streamlined POS flow / reduced friction)
 
-[
-\rho_i = \frac{\lambda}{\mu_i}
-]
+| Metric | Value |
+|--------|-------|
+| Avg Queue Length | 9.61 |
+| Throughput | 59.0 orders/hour |
+| Estimated Time in System | ~9.8 minutes |
 
-* ( \rho < 1 ) → Stable system
-* ( \rho \approx 1 ) → High sensitivity to variability
-* ( \rho > 1 ) → Queue grows unbounded over time
-
-In serial systems, the lowest service rate defines the bottleneck.
+**Impact:**  
+~30–35% reduction in congestion with modest Till improvement.
 
 ---
 
-## Baseline Interpretation
+### Scenario 2: Full Improvement (Till + Bar)
 
-The Baseline scenario represents current operational performance under:
+| Metric | Value |
+|--------|-------|
+| Avg Queue Length | 7.24 |
+| Throughput | 59.0 orders/hour |
+| Estimated Time in System | ~7.4 minutes |
 
-* Average arrival rate λ
-* Observed service rates μ₀, μ₁, μ₂
-
-It serves as a reference point for evaluating operational interventions.
+Marginal gains from bar improvement once Till is stabilized.
 
 ---
 
 ## Key Insight
 
-Simulation results demonstrate:
+The model reveals:
 
-* The Till stage often acts as the primary bottleneck.
-* Small improvements in Till service rate significantly reduce overall queue length.
-* Improvements at downstream stages (Shots, Milk) yield smaller marginal effects when Till remains constrained.
+- The Till stage is the structural bottleneck.
+- Small improvements in Till service rate produce disproportionately large reductions in congestion.
+- Downstream optimization (Shots, Milk) yields limited returns if the upstream constraint remains.
 
-This reflects classical queueing theory behavior in high-utilization serial systems.
+This reflects classical high-utilization queue behavior:
 
----
+```
+ρ = λ / μ
+```
 
-## Model Limitations
-
-This base model assumes:
-
-* Constant arrival rate (no time-of-day variation)
-* No menu-dependent service time variation
-* No learning curve effects
-* No customer abandonment (balking/reneging)
-* Single server per stage
-
-The model is intentionally simplified to isolate structural bottlenecks.
+As utilization (ρ) approaches 1, queue growth becomes nonlinear.
 
 ---
 
-## Purpose
+## Strategic Implication
 
-This simulation is not intended to perfectly replicate operational reality.
+Operational delay in high-volume environments is often misattributed to individual performance.
 
-Instead, it provides:
+This simulation demonstrates:
 
-* A structural lens to understand congestion dynamics
-* A quantitative framework for bottleneck analysis
-* A foundation for future extensions (time-varying demand, learning curves, healthcare analogs)
+- Congestion is a **system-level phenomenon**
+- Bottlenecks shift leverage points
+- Micro-efficiency improvements upstream dominate downstream tuning
 
 ---
 
-If you'd like, I can now help you write:
+## Broader Relevance
 
-* A strong **Project Motivation** section (linking this to systems thinking and healthcare ops), or
-* A concise **Executive Summary** for recruiters, or
-* A more technical appendix explaining the mathematics in greater depth.
+Although modeled on a coffee shop, this structure generalizes to:
+
+- Hospital triage → Diagnostics → Treatment  
+- Insurance intake → Review → Approval  
+- EHR entry → Clinical processing → Discharge  
+
+Serial high-utilization systems behave similarly across domains.
+
+---
+
+## What This Project Demonstrates
+
+- Applied queueing theory in a real operational setting  
+- Translation of qualitative observation into quantitative modeling  
+- Structural bottleneck identification  
+- Data-driven operational reasoning  
+
+---
+
+## Future Extensions
+
+Planned improvements:
+
+- Time-varying arrival rates (peak modeling)  
+- Menu-dependent service times  
+- Learning curve effects  
+- Multi-server Till configuration  
+- Healthcare operations analog modeling  
+
+---
