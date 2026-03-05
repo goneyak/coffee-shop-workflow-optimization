@@ -1,0 +1,66 @@
+experiment_name: menu_normal_mix
+sim_time_hours: 8
+dt: 0.005
+runs: 300
+
+arrival:
+  type: time_varying
+  peak_profile:
+    - [0, 3, 40]
+    - [3, 5, 80]
+    - [5, 7, 120]
+    - [7, 8, 70]
+
+staffing:
+  till_servers: 1
+  shots_servers: 1
+  milk_servers: 1
+
+menu_mix:
+  espresso: 0.095
+  americano: 0.200
+  flat_white: 0.100
+  latte_capp: 0.300
+  flavour_latte: 0.100
+  hot_choc: 0.050
+  service_times_hours:
+  matcha: 0.040
+  batch_brew: 0.050
+  tea: 0.015
+  herbal_tea: 0.015
+  single_origin: 0.005
+
+modifiers:
+  syrup_prob: 0.25
+  decaf_prob: 0.08
+  iced_prob: 0.18
+  oat_prob: 0.22
+  lowfat_prob: 0.10
+  cash_prob: 0.20
+  loyalty_attempt_prob: 0.50
+  upsell_attempt_prob: 0.40
+
+service_times_hours:
+  shots:
+    base_shot: 0.0083  # 30초
+    decaf_extra: 0.0028  # 10초
+    single_extra: 0.0014 # 5초
+    double_extra: 0.0017 # 6초
+    syrup_extra: 0.0006  # 2초
+
+  milk:
+    auto_milk: 0.0083  # 30초
+    oat_extra: 0.0042    # 15초
+    lowfat_extra: 0.0042 # 15초
+    iced_extra: 0.0022   # 8초
+    hot_choc_extra: 0.0056 # 20초
+    chai_extra: 0.0042   # 15초
+    matcha_extra: 0.0069 # 25초
+    syrup_extra: 0.0006  # 2초
+
+  till:
+    base: 0.0083       # 30초
+    cash_extra: 0.0022   # 8초
+    loyalty_extra: 0.0017 # 6초
+    upsell_extra: 0.0008  # 3초
+    customization_extra: 0.0011 # 4초

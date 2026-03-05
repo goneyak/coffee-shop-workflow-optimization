@@ -1,0 +1,19 @@
+experiment_name: utilization_40
+sim_time_hours: 8
+dt: 0.005
+runs: 300
+
+arrival:
+  type: constant
+  lambda_per_hour: 26.0
+
+service:
+  till:
+    servers: 1
+    mu_per_hour: 65
+  shots:
+    servers: 1
+    mu_per_hour: 85
+  milk:
+    servers: 1
+    mu_per_hour: 75

@@ -1,0 +1,2 @@
+scenario,mu0,mu1,mu2,mean_avg_queue,std_avg_queue,mean_throughput,std_throughput,mean_wait_approx,mean_q0,mean_q1,mean_q2,mean_peak_q0,mean_peak_total,runs
+visible_queue,65,85,75,51.14640625,8.486495513081595,54.015,2.3763273002949514,0.9468926455614181,45.477158333333335,2.0647749999999996,3.604472916666667,155.15,164.5,300

@@ -1,0 +1,2 @@
+scenario,mu0,mu1,mu2,servers_till,servers_shots,servers_milk,mean_avg_queue,std_avg_queue,mean_throughput,std_throughput,mean_wait_approx,mean_q0,mean_q1,mean_q2,mean_peak_q0,mean_peak_total,runs
+baseline,65,85,75,1,1,1,14.053325,5.543009443529166,57.897083333333335,2.2939733627527046,0.24272941210337307,8.713783333333332,2.0339104166666666,3.30563125,25.953333333333333,32.723333333333336,300

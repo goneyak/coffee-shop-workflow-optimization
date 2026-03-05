@@ -5,6 +5,7 @@
 
 numpy>=1.20
 matplotlib>=3.0
+PyYAML>=6.0
 
 # Optional, but useful for data analysis in notebooks or future extensions
 pandas>=2.0

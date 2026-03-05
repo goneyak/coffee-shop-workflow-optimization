@@ -1,0 +1,23 @@
+experiment_name: peak_arrivals
+sim_time_hours: 8
+dt: 0.005
+runs: 300
+
+arrival:
+  type: time_varying
+  peak_profile:
+    - [0, 3, 40]      # morning: 40/hour
+    - [3, 5, 80]      # mid-morning: 80/hour
+    - [5, 7, 120]     # lunch rush: 120/hour
+    - [7, 8, 70]      # post-lunch: 70/hour
+
+service:
+  till:
+    servers: 1
+    mu_per_hour: 65
+  shots:
+    servers: 1
+    mu_per_hour: 85
+  milk:
+    servers: 1
+    mu_per_hour: 75

@@ -1,0 +1,19 @@
+experiment_name: full_improvement
+sim_time_hours: 8
+dt: 0.005
+runs: 300
+
+arrival:
+  type: constant
+  lambda_per_hour: 60
+
+service:
+  till:
+    servers: 1
+    mu_per_hour: 75
+  shots:
+    servers: 1
+    mu_per_hour: 95
+  milk:
+    servers: 1
+    mu_per_hour: 85
