@@ -443,10 +443,3 @@ By modeling workflow structure explicitly, organizations can identify:
 - the disproportionate impact of small operational changes near saturation
 
 The same framework applies directly to healthcare (triage → diagnostics → treatment), insurance processing, and any sequential service system.
-
----
-
-# Author
-
-Goyeun Yun  
-Healthcare Data & Systems Modeling
