@@ -18,6 +18,8 @@ Although the model is inspired by a coffee shop environment, the system structur
 - hospital triage → diagnostics → treatment
 - insurance intake → review → approval
 - customer support ticket processing
+  
+<img width="1536" height="1024" alt="ChatGPT Image Mar 5, 2026, 09_41_49 AM" src="https://github.com/user-attachments/assets/7a15c2a2-8b1c-4a65-97d6-1089cfea04af" />
 
 ---
 
