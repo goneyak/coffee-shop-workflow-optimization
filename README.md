@@ -110,6 +110,7 @@ Important:
 
 - This includes customers waiting **and being served**
 - It does **not only represent the visible queue**
+- In this project, `q0`, `q1`, `q2` are treated as **work-in-progress (WIP) counts** at each stage (waiting + in-service).
 
 ---
 
@@ -137,7 +138,7 @@ We estimate:
 W ≈ L̄ / Throughput
 ```
 
-This approximates the **average time a customer spends inside the system**.
+This approximates the **average time a customer spends inside the system**, using throughput as the empirical effective arrival rate in steady operation.
 
 ---
 
@@ -156,11 +157,11 @@ Baseline parameters represent the observed workflow structure.
 
 **Key Observations:**
 
-- **System Capacity Ceiling (~60 drinks/hour):** Throughput remains stable at 54-59 orders/hour across all scenarios, indicating system saturation at ~60 orders/hour maximum capacity.
+- **Observed Throughput Ceiling (baseline settings):** Throughput stays in a narrow band (about 54-59 orders/hour in these experiments), consistent with a bottleneck-limited serial system under heavy load.
 - **Improved Till** (~32% congestion reduction): Till efficiency alone yields significant gains, reducing queue from 14 to 9.6 orders.
 - **Full Improvement** (~48% congestion reduction): Additional bar-stage improvements have diminishing returns, showing the bottleneck-relief principle.
 - **Peak Arrivals** (lunch-hour rush 5-7pm): Demonstrates system fragility under demand spikes; queue grows 3.6× while throughput drops only 7%.
-- **Preorder Pipeline** (~14% congestion reduction): Buffering redistributes work efficiently, reducing system load while maintaining throughput. Shows that operational design improvements can be achieved without capacity upgrades.
+- **Preorder Buffering** (~14% congestion reduction): Priority handling at the Shots stage can reduce internal queue accumulation while maintaining similar throughput in current settings.
 - **Additional Till servers** (Scenario 6): Adding a second till more than halves system congestion and wait time; a third till yields only marginal extra gain due to downstream bottlenecks. Staffing is therefore a powerful lever for managing utilization.
 
 ---
@@ -207,6 +208,17 @@ This scenario explores system behavior under lunch-hour rush conditions (0-3hr: 
 
 This scenario analyzes the **customer perception gap** during peak hours.
 
+**Stress-test setup used for this scenario:**
+
+| Parameter | Value |
+|-----------|-------|
+| Arrival profile | 0-3h: 40/hr, 3-5h: 80/hr, 5-7h: 120/hr, 7-8h: 70/hr |
+| Service rates | mu0=65, mu1=85, mu2=75 (orders/hr equivalent in base mode) |
+| Simulation horizon | 8 hours |
+| Time step | dt=0.005 hours |
+
+We use a smaller `dt` in stress tests to reduce discretization artifacts under high arrival variability.
+
 **Key Insight:** Customers only see the Till line, but significant work accumulates behind the counter.
 
 | Queue Component | Average Length | Peak Length | % of Total |
@@ -231,17 +243,17 @@ This scenario analyzes the **customer perception gap** during peak hours.
 
 *(See [docs/05_preorder_buffer.md](docs/05_preorder_buffer.md) for full notes.)*
 
-This scenario models a preorder workflow where Shots baristas begin preparing orders immediately after Till processes them, before the Till completes payment and handoff.
+This scenario models a preorder-style buffering rule where orders that leave Till are placed in a priority buffer for Shots before regular queue items.
 
-**Policy mechanism:** Processed orders enter a priority queue for Shots service, allowing concurrent preparation while Till remains available for the next customer.
+**Policy mechanism (as implemented):** Till-completed orders are routed to a priority queue (`preorder_q1`) and consumed first by the Shots stage within available service budget.
 
 **Trade-off Analysis:**
 - **System congestion reduction:** L̄ decreases from 14.05 to 12.02 (-14%)
-- **Visible queue (q0):** Unchanged at 8.7 (Till throughput unaffected)
-- **Shots queue (q1):** Reduced to 0 (preorder absorbed immediately)
+- **Visible queue (q0):** Essentially unchanged (Till throughput unaffected)
+- **Shots queue (q1):** Becomes near-zero on average (priority buffer absorbs most intermediate buildup)
 - **Throughput:** Maintained at 57.90 orders/hr (no change—Milk capacity still constrains system)
 
-**Operational Lesson:** Preorder buffering redistributes work within the system, reducing queue buildup at Shots while maintaining overall throughput. It doesn't increase capacity (limited by downstream Milk stage), but improves operational efficiency by enabling better workforce utilization. Baristas work more continuously rather than intermittently, reducing idle time while customer wait times remain approximately equal. Most effective when combined with Till efficiency improvements (Scenario 1) to shift the system bottleneck.
+**Operational Lesson:** In this model, preorder buffering mainly redistributes queueing across stages rather than increasing system capacity. It can smooth intermediate buildup at Shots while overall throughput remains constrained by downstream limits.
 
 ---
 
@@ -288,13 +300,13 @@ When utilization approaches 1:
 - queues grow nonlinearly
 - small service improvements produce large congestion reductions
 
-In this model, the **Till stage acts as the primary structural bottleneck**.
+In this model, the **Till stage appears as the primary bottleneck in baseline settings**, and bottlenecks can shift downstream after interventions.
 
 ---
 
 ## Utilization Curve (The Fundamental Law)
 
-One of the most important discoveries in operations research is that **queue length grows nonlinearly with utilization**. This is not linear: it's exponential.
+One of the most important discoveries in operations research is that **queue length grows nonlinearly with utilization** and tends to blow up as rho approaches 1.
 
 ### Results from sweep (ρ = 0.2 to 0.95)
 
@@ -398,14 +410,16 @@ Generates 6 visualizations in `results/`:
 
 # Model Scope & Limitations
 
-**Implemented in this project:**
+**Implemented and validated in this project:**
 - Time-varying (non-homogeneous Poisson) arrival process
 - Multi-server Till (c₀ = 1, 2, 3)
-- Menu-dependent service times (per-drink YAML configs with realistic timing)
-- Preorder pipeline (priority queue for Shots stage)
+- Preorder buffering (priority queue at Shots stage)
 - Utilization sweep (ρ = 0.2 → 0.95)
 - Visible queue vs system backlog decomposition
 - 300-run Monte Carlo with confidence intervals
+
+**Implemented but still under active validation:**
+- Menu-dependent service-time mode (`menu_*.yaml`) and related scenario calibration
 
 **Not modeled (by design):**
 - Customer abandonment (balking/reneging)
