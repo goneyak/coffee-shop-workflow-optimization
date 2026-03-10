@@ -1,4 +1,4 @@
-# Extension: Multi-Server Till (Staffing)
+# Scenario 6 - Multi-Server Till (Staffing)
 
 ## Motivation
 Till is a bottleneck; staffing strategy is often the most actionable lever.

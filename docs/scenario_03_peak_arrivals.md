@@ -1,4 +1,4 @@
-# Extension: Time-Varying Arrivals (Peak Modeling)
+# Scenario 3 - Peak Arrivals (Time-Varying Demand)
 
 ## Motivation
 Real demand varies by time-of-day. Constant λ underestimates rush-hour queue formation.
@@ -44,4 +44,4 @@ Related result file:
 - `results/peak_arrivals/summary.csv`
 
 ## Next
-- Visible queue vs hidden backlog decomposition: `docs/04_visible_queue.md`
+- Visible queue vs hidden backlog decomposition: `docs/scenario_04_visible_queue.md`

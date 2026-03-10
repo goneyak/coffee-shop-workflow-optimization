@@ -67,7 +67,7 @@ def sample_order(menu_mix: dict, modifiers: dict, service_times_hours: dict) -> 
         'batch_brew': False,
         'tea': False,
         'herbal_tea': False,
-        'single_origin': False,  # handled separately as pourover
+        'single_origin': True,  # handled as a dedicated brew workload at shots stage
     }
     
     requires_milk_map = {
@@ -117,12 +117,16 @@ def sample_order(menu_mix: dict, modifiers: dict, service_times_hours: dict) -> 
     # Calculate Shots time
     t_shots = 0.0
     if requires_shots:
-        t_shots = shots_cfg.get('base_shot', 30)
-        if is_decaf:
-            t_shots += shots_cfg.get('decaf_extra', 10)
+        if drink_type == 'single_origin':
+            # Dedicated manual brew workload (e.g., pourover/aeropress).
+            t_shots = shots_cfg.get('pourover_base', 0.0333)
         else:
-            # Single/double espresso logic (simplified: let's assume default is double)
-            t_shots += shots_cfg.get('double_extra', 6)
+            t_shots = shots_cfg.get('base_shot', 30)
+            if is_decaf:
+                t_shots += shots_cfg.get('decaf_extra', 10)
+            else:
+                # Single/double espresso logic (simplified: default is double).
+                t_shots += shots_cfg.get('double_extra', 6)
     
     # Calculate Milk time
     t_milk = 0.0
@@ -158,21 +162,21 @@ def sample_order(menu_mix: dict, modifiers: dict, service_times_hours: dict) -> 
         rem_milk=t_milk
     )
 
-    """
-    Compute arrival rate at time t_hours.
-    peak_profile: list of (start_hour, end_hour, rate) tuples, or None for constant
-    Returns: arrival rate (customers/hour)
-    """
-    if peak_profile is None:
-        return 60  # default constant rate
-    
-    for start, end, rate in peak_profile:
-        if start <= t_hours < end:
-            return rate
-    
-    return 60  # default fallback
 
-def simulate(arrival_rate, mu0, mu1, mu2, sim_time_hours, dt, seed=None, peak_profile=None, preorder_enabled=False, servers=(1,1,1), menu_config=None):
+def simulate(
+    arrival_rate,
+    mu0,
+    mu1,
+    mu2,
+    sim_time_hours,
+    dt,
+    seed=None,
+    peak_profile=None,
+    preorder_enabled=False,
+    preorder_buffer_limit: Optional[int] = None,
+    servers=(1, 1, 1),
+    menu_config=None,
+):
     """
     Simulate a multi-stage queueing system.
     
@@ -184,6 +188,7 @@ def simulate(arrival_rate, mu0, mu1, mu2, sim_time_hours, dt, seed=None, peak_pr
         seed: random seed
         peak_profile: time-varying arrival profile
         preorder_enabled: whether to use preorder buffering
+        preorder_buffer_limit: max items in preorder shots buffer (None = unlimited)
         servers: tuple (s0, s1, s2) for number of servers at each stage
         menu_config: dict with menu_mix, modifiers, service_times_seconds
                      If provided, uses job-level service times (budget-based).
@@ -235,7 +240,7 @@ def simulate(arrival_rate, mu0, mu1, mu2, sim_time_hours, dt, seed=None, peak_pr
                 order = sample_order(
                     menu_config['menu_mix'],
                     menu_config['modifiers'],
-                        menu_config['service_times_hours']
+                    menu_config['service_times_hours']
                 )
                 q0.append(order)
         else:
@@ -256,7 +261,14 @@ def simulate(arrival_rate, mu0, mu1, mu2, sim_time_hours, dt, seed=None, peak_pr
                     # Route to next stage based on order requirements
                     if order.requires_shots:
                         if preorder_enabled:
-                            preorder_q1.append(order)
+                            has_space = (
+                                preorder_buffer_limit is None
+                                or len(preorder_q1) < preorder_buffer_limit
+                            )
+                            if has_space:
+                                preorder_q1.append(order)
+                            else:
+                                q1.append(order)
                         else:
                             q1.append(order)
                     elif order.requires_milk:
@@ -271,7 +283,13 @@ def simulate(arrival_rate, mu0, mu1, mu2, sim_time_hours, dt, seed=None, peak_pr
             served0 = min(q0, service0)
             q0 -= served0
             if preorder_enabled:
-                preorder_q1 += served0
+                if preorder_buffer_limit is None:
+                    to_preorder = served0
+                else:
+                    available = max(0, preorder_buffer_limit - preorder_q1)
+                    to_preorder = min(served0, available)
+                preorder_q1 += to_preorder
+                q1 += (served0 - to_preorder)
             else:
                 q1 += served0
 

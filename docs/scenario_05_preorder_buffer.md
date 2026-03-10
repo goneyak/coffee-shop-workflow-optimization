@@ -1,4 +1,4 @@
-# Extension: Preorder / Pipeline Preparation Policy
+# Scenario 5 - Preorder / Pipeline Preparation Policy
 
 ## Motivation
 Customers often pay and wait at the till while baristas stand idle because the
@@ -17,26 +17,28 @@ than strictly sequentially, though total system capacity does not change.
 ## Implementation notes
 - Configs `preorder_buffer_small.yaml` and `preorder_buffer_large.yaml` enable
 the policy.
+- `buffer_limit` controls how many orders can be held in preorder priority
+  before overflow goes to regular shots queue.
 - `src/simulation.py` now includes a `preorder_q1` counter and conditional
 logic to push served customers into it and to consume it ahead of the regular
 shots queue.
 - `src/experiments.py` propagates `preorder_enabled` from the config to
 the simulation.
 
-## Results (Scenario 5)
-Preorder reduces average system work‑in‑progress from 14.05 to 12.02 (≈14 %) and
-eliminates the regular shots queue altogether (`avg_q1` drops to 0). Throughput
-remains unchanged at ≈57.9 orders/hour because the milk station remains the
-ultimate bottleneck.
+## Results (Scenario 5)
+Preorder reduces average system work-in-progress versus baseline in both
+variants, with stronger gains when the preorder buffer is larger. Throughput
+remains effectively unchanged at ≈57.9 orders/hour because the milk stage
+remains the binding bottleneck.
 
 | Scenario | mean_avg_queue | mean_throughput (/h) | mean_wait_approx (h) | mean_q0 | mean_q1 | mean_q2 |
 |---|---:|---:|---:|---:|---:|---:|
-| preorder_buffer_small | 12.019 | 57.897 | 0.208 | 8.714 | 0.000 | 3.306 |
+| preorder_buffer_small | 12.702 | 57.897 | 0.219 | 8.714 | 0.682 | 3.306 |
 | preorder_buffer_large | 12.019 | 57.897 | 0.208 | 8.714 | 0.000 | 3.306 |
 
 Current note:
-- In the current implementation and parameterization, small/large buffer
-  settings produce identical aggregate KPI outputs.
+- `small` and `large` now produce distinct queue-shape outcomes because
+  `buffer_limit` is applied in simulation routing.
 
 ## Visualization
 

@@ -1,4 +1,4 @@
-# Extension: Menu-Dependent Service Times
+# Scenario 7 - Menu-Dependent Service Times
 
 ## Motivation
 Milk station time varies greatly by drink type (oat/matcha/hot chocolate/iced).
@@ -23,13 +23,14 @@ Latest results (`runs=300`):
 
 | Scenario | mean_avg_queue | mean_throughput (/h) | mean_q0 | mean_q1 | mean_q2 | mean_peak_total |
 |---|---:|---:|---:|---:|---:|---:|
-| menu_quick_drinks | 9.081 | 72.560 | 8.446 | 0.460 | 0.175 | 41.713 |
-| menu_normal_mix | 11.304 | 71.715 | 10.463 | 0.407 | 0.433 | 48.900 |
-| menu_milk_heavy | 12.194 | 71.360 | 10.614 | 0.380 | 1.200 | 51.150 |
+| menu_quick_drinks | 10.463 | 72.141 | 8.446 | 1.839 | 0.179 | 46.097 |
+| menu_normal_mix | 11.372 | 71.699 | 10.463 | 0.470 | 0.439 | 49.117 |
+| menu_milk_heavy | 12.679 | 71.239 | 10.614 | 0.662 | 1.403 | 52.437 |
 
 Interpretation:
 - `menu_milk_heavy` increases Milk-stage load (`mean_q2`) and worst-case total queue.
-- `menu_quick_drinks` yields the shortest queues and highest throughput.
+- `menu_quick_drinks` still keeps the highest throughput, but single-origin brew
+	handling raises shots-stage pressure (`mean_q1`) relative to previous runs.
 - Till (`q0`) remains the dominant queue contributor in all three mixes.
 
 ## Time-Series Comparison

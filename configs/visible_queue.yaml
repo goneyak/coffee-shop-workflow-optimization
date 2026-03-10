@@ -1,6 +1,6 @@
 experiment_name: visible_queue
 sim_time_hours: 8
-dt: 0.005
+dt: 0.0025
 runs: 300
 
 arrival:

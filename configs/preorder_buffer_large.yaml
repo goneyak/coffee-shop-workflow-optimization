@@ -18,4 +18,4 @@ service:
 policy:
   preorder_buffer:
     enabled: true
-    # buffer_limit is a legacy field; the current implementation ignores it
+    buffer_limit: 40

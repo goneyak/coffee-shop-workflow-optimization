@@ -152,10 +152,10 @@ Baseline parameters represent the observed workflow structure.
 
 | Metric | Baseline | Improved Till | Full Improvement | Peak Arrivals | Preorder Small | Preorder Large |
 |--------|----------|---------------|------------------|---------------|----------------|----------------|
-| **Avg Queue Length (L̄)** | 14.05 | 9.61 | 7.24 | 51.15 | 12.02 | 12.02 |
+| **Avg Queue Length (L̄)** | 14.05 | 9.61 | 7.24 | 51.15 | 12.70 | 12.02 |
 | **Throughput (orders/hr)** | 57.90 | 59.03 | 59.01 | 54.02 | 57.90 | 57.90 |
-| **Wait Time Approx (hours)** | 0.243 | 0.163 | 0.123 | 0.947 | 0.208 | 0.208 |
-| **Wait Time (minutes)** | ~14.6 | ~9.8 | ~7.4 | ~57 | ~12.5 | ~12.5 |
+| **Wait Time Approx (hours)** | 0.243 | 0.163 | 0.123 | 0.947 | 0.219 | 0.208 |
+| **Wait Time (minutes)** | ~14.6 | ~9.8 | ~7.4 | ~57 | ~13.2 | ~12.5 |
 
 **Key Observations:**
 
@@ -163,7 +163,7 @@ Baseline parameters represent the observed workflow structure.
 - **Improved Till** (~32% congestion reduction): Till efficiency alone yields significant gains, reducing queue from 14 to 9.6 orders.
 - **Full Improvement** (~48% congestion reduction): Additional bar-stage improvements have diminishing returns, showing the bottleneck-relief principle.
 - **Peak Arrivals** (lunch-hour rush 5-7pm): Demonstrates system fragility under demand spikes; queue grows 3.6× while throughput drops only 7%.
-- **Preorder Buffering** (~14% congestion reduction): Priority handling at the Shots stage can reduce internal queue accumulation while maintaining similar throughput in current settings.
+- **Preorder Buffering** (~10-15% congestion reduction): Larger preorder buffers suppress intermediate shots queues more strongly than small buffers while maintaining similar throughput.
 - **Additional Till servers** (Scenario 6): Adding a second till more than halves system congestion and wait time; a third till yields only marginal extra gain due to downstream bottlenecks. Staffing is therefore a powerful lever for managing utilization.
 - **Menu-dependent service times** (Scenario 7): Different drink mixes produce distinct stage-level bottlenecks (Till-heavy vs Milk-heavy), even under similar demand.
 - **Healthcare mapping extension** (Scenario 8): The same serial-queue structure transfers to triage/diagnostics/treatment flow and supports intervention comparisons.
@@ -212,7 +212,7 @@ This scenario explores system behavior under lunch-hour rush conditions (0-3hr: 
 
 **Result:** Queue length grows 3.6× to 51 customers while throughput drops only 7% (57.9→54.0), demonstrating that demand spikes primarily create waiting rather than increased service capacity.
 
-See [docs/03_peak_arrivals.md](docs/03_peak_arrivals.md) for detailed
+See [docs/scenario_03_peak_arrivals.md](docs/scenario_03_peak_arrivals.md) for detailed
 assumptions and interpretation.
 
 ---
@@ -228,7 +228,7 @@ This scenario analyzes the **customer perception gap** during peak hours.
 | Arrival profile | 0-3h: 40/hr, 3-5h: 80/hr, 5-7h: 120/hr, 7-8h: 70/hr |
 | Service rates | mu0=65, mu1=85, mu2=75 (orders/hr equivalent in base mode) |
 | Simulation horizon | 8 hours |
-| Time step | dt=0.005 hours |
+| Time step | dt=0.0025 hours |
 
 We use a smaller `dt` in stress tests to reduce discretization artifacts under high arrival variability.
 
@@ -236,12 +236,12 @@ We use a smaller `dt` in stress tests to reduce discretization artifacts under h
 
 | Queue Component | Average Length | Peak Length | % of Total |
 |----------------|----------------|-------------|-----------|
-| **Visible Queue (Till)** | 45.5 | 155 | 89% |
-| **Bar Backlog (Shots)** | 2.1 | - | 4% |
-| **Bar Backlog (Milk)** | 3.6 | - | 7% |
-| **Total System** | 51.1 | 165 | 100% |
+| **Visible Queue (Till)** | 46.3 | 157 | 88.8% |
+| **Bar Backlog (Shots)** | 2.2 | - | 4.2% |
+| **Bar Backlog (Milk)** | 3.7 | - | 7.0% |
+| **Total System** | 52.1 | 167 | 100% |
 
-**Reality Check:** During lunch rush, customers see ~45 people in line, but the system actually has 51 orders in progress. The remaining 6 orders are "invisible" work-in-progress behind the bar.
+**Reality Check:** During lunch rush, customers see ~46 people in line, but the system actually has ~52 orders in progress. Around 6 orders are "invisible" work-in-progress behind the bar.
 
 **Operational Insight:** This customer perception gap is endemic to service systems:
 - Hospital triage: Patient sees waiting room, but diagnosis/treatment backlog is hidden
@@ -250,23 +250,23 @@ We use a smaller `dt` in stress tests to reduce discretization artifacts under h
 
 **Implication:** Reducing visible queue alone (e.g., through preorder buffers) doesn't reduce operational stress; it redistributes congestion upstream. True improvement requires addressing the throughput ceiling.
 
-See [docs/04_visible_queue.md](docs/04_visible_queue.md) for full decomposition
+See [docs/scenario_04_visible_queue.md](docs/scenario_04_visible_queue.md) for full decomposition
 and notes.
 
 ---
 
 ## Scenario 5 — Pipeline Preparation Policy
 
-*(See [docs/05_preorder_buffer.md](docs/05_preorder_buffer.md) for full notes.)*
+*(See [docs/scenario_05_preorder_buffer.md](docs/scenario_05_preorder_buffer.md) for full notes.)*
 
 This scenario models a preorder-style buffering rule where orders that leave Till are placed in a priority buffer for Shots before regular queue items.
 
 **Policy mechanism (as implemented):** Till-completed orders are routed to a priority queue (`preorder_q1`) and consumed first by the Shots stage within available service budget.
 
 **Trade-off Analysis:**
-- **System congestion reduction:** L̄ decreases from 14.05 to 12.02 (-14%)
+- **System congestion reduction:** L̄ decreases from 14.05 to 12.70 (-9.6%) for a small preorder buffer and to 12.02 (-14.5%) for a large buffer
 - **Visible queue (q0):** Essentially unchanged (Till throughput unaffected)
-- **Shots queue (q1):** Becomes near-zero on average (priority buffer absorbs most intermediate buildup)
+- **Shots queue (q1):** Drops substantially; near-zero with a large buffer and reduced but non-zero with a small buffer
 - **Throughput:** Maintained at 57.90 orders/hr (no change—Milk capacity still constrains system)
 
 **Operational Lesson:** In this model, preorder buffering mainly redistributes queueing across stages rather than increasing system capacity. It can smooth intermediate buildup at Shots while overall throughput remains constrained by downstream limits.
@@ -296,7 +296,7 @@ expected queue lengths without changing the underlying service rates. The
 results here mirror classic M/M/c queueing behavior: as utilization per server
 decreases, both variability and queueing delay drop sharply.
 
-See [docs/06_multi_server.md](docs/06_multi_server.md) for full experiment
+See [docs/scenario_06_multi_server.md](docs/scenario_06_multi_server.md) for full experiment
 details and server-level metrics.
 
 ---
@@ -317,7 +317,7 @@ Three menu-mix configurations are compared:
 espresso-heavy demand, Till pressure dominates. In milk-heavy demand, downstream
 bar workload becomes the primary source of delay.
 
-See [docs/08_menu_dependent_service.md](docs/08_menu_dependent_service.md) for
+See [docs/scenario_07_menu_dependent_service.md](docs/scenario_07_menu_dependent_service.md) for
 the detailed setup, metrics, and stage-level time-series plots.
 
 ---
@@ -341,7 +341,7 @@ waiting increase nonlinearly while throughput gains are limited by the slowest
 downstream stage. Targeted upstream capacity can reduce queue growth but does
 not eliminate downstream constraints.
 
-See [docs/09_healthcare_mapping.md](docs/09_healthcare_mapping.md) for full
+See [docs/scenario_08_healthcare_mapping.md](docs/scenario_08_healthcare_mapping.md) for full
 parameter mapping, results table, and interpretation.
 
 ---
@@ -392,7 +392,7 @@ Above ρ = 0.85, the system enters a **danger zone** where small demand increase
 
 A coffee shop designed for average demand may be comfortable at ρ = 0.6. But when demand spikes (peak hours) pushing toward ρ = 0.9, wait times don't double — they **triple or quadruple**. This is why **spare capacity matters**.
 
-For detailed analysis, see [docs/07_utilization_analysis.md](docs/07_utilization_analysis.md).
+For detailed analysis, see [docs/core_03_utilization_analysis.md](docs/core_03_utilization_analysis.md).
 
 ---
 
@@ -429,7 +429,7 @@ coffee-shop-workflow-optimization/
 │   ├── system_scheme.png           # High-level workflow schematic
 │   └── utilization_curve.png      # ρ vs queue & throughput curve
 ├── docs/
-│   ├── 00_project_map.md ... 09_healthcare_mapping.md
+│   ├── core_00_project_map.md ... scenario_08_healthcare_mapping.md
 ├── run_plots.py              # Convenience script: regenerate all plots
 ├── requirements.txt
 └── README.md

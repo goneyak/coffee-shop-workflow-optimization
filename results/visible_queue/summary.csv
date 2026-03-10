@@ -1,2 +1,2 @@
-scenario,mu0,mu1,mu2,mean_avg_queue,std_avg_queue,mean_throughput,std_throughput,mean_wait_approx,mean_q0,mean_q1,mean_q2,mean_peak_q0,mean_peak_total,runs
-visible_queue,65,85,75,51.14640625,8.486495513081595,54.015,2.3763273002949514,0.9468926455614181,45.477158333333335,2.0647749999999996,3.604472916666667,155.15,164.5,300
+scenario,mu0,mu1,mu2,servers_till,servers_shots,servers_milk,mean_avg_queue,std_avg_queue,mean_throughput,std_throughput,mean_wait_approx,mean_q0,mean_q1,mean_q2,mean_peak_q0,mean_peak_total,runs
+visible_queue,65,85,75,1,1,1,52.113317708333334,8.687751880155592,54.09291666666667,2.5065261460418737,0.9634037304637852,46.2695,2.1784697916666667,3.6653479166666663,157.32666666666665,167.18333333333334,300

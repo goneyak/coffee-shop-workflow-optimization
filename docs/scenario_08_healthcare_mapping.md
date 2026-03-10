@@ -1,4 +1,4 @@
-# Generalization: Healthcare Operations Mapping
+# Scenario 8 - Healthcare Operations Mapping
 
 ## Motivation
 Serial high-utilization systems appear across healthcare workflows.

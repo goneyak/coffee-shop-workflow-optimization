@@ -6,7 +6,7 @@ import yaml
 from src.simulation import simulate
 
 
-def run_scenario(name, mu0, mu1, mu2, runs=300, base_seed=1000, arrival_rate=60, sim_time_hours=8, dt=0.005, peak_profile=None, preorder_enabled=False, servers=(1,1,1), menu_config=None):
+def run_scenario(name, mu0, mu1, mu2, runs=300, base_seed=1000, arrival_rate=60, sim_time_hours=8, dt=0.005, peak_profile=None, preorder_enabled=False, preorder_buffer_limit=None, servers=(1,1,1), menu_config=None):
     avg_queues = []
     throughputs = []
     avg_q0s = []
@@ -26,6 +26,7 @@ def run_scenario(name, mu0, mu1, mu2, runs=300, base_seed=1000, arrival_rate=60,
             seed=base_seed + i,
             peak_profile=peak_profile,
             preorder_enabled=preorder_enabled,
+            preorder_buffer_limit=preorder_buffer_limit,
             servers=servers,
             menu_config=menu_config
         )
@@ -158,8 +159,10 @@ if __name__ == "__main__":
     
     # Handle policy
     preorder_enabled = False
+    preorder_buffer_limit = None
     if 'policy' in config and 'preorder_buffer' in config['policy']:
         preorder_enabled = config['policy']['preorder_buffer']['enabled']
+        preorder_buffer_limit = config['policy']['preorder_buffer'].get('buffer_limit')
 
     row = run_scenario(
         experiment_name, mu0, mu1, mu2,
@@ -169,6 +172,7 @@ if __name__ == "__main__":
         dt=dt,
         peak_profile=peak_profile,
         preorder_enabled=preorder_enabled,
+        preorder_buffer_limit=preorder_buffer_limit,
         servers=(s0, s1, s2),
         menu_config=menu_config
     )

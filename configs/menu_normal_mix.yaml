@@ -42,6 +42,7 @@ modifiers:
 service_times_hours:
   shots:
     base_shot: 0.0083  # 30초
+    pourover_base: 0.0333 # 120초
     decaf_extra: 0.0028  # 10초
     single_extra: 0.0014 # 5초
     double_extra: 0.0017 # 6초
