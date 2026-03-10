@@ -16,6 +16,7 @@ This file lists canonical documentation pages and highlights archive/draft files
 - Model definition: `docs/core_01_base_model.md`
 - Calibration notes: `docs/core_02_calibration.md`
 - Utilization analysis: `docs/core_03_utilization_analysis.md`
+- Executive one-page summary: `docs/core_04_executive_summary.md`
 - Project map: `docs/core_00_project_map.md`
 
 ## Archive / Non-Canonical
