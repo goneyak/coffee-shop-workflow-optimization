@@ -286,6 +286,51 @@ decreases, both variability and queueing delay drop sharply.
 
 ---
 
+## Scenario 7 - Menu-Dependent Service Times
+
+This scenario replaces fixed stage service rates with order-level service times
+sampled from menu categories (`espresso`, `latte`, `frappuccino`). Each category
+has different expected workload across Till, Shots, and Milk.
+
+Three menu-mix configurations are compared:
+
+- `menu_normal_mix`: balanced demand profile
+- `menu_quick_drinks`: espresso-heavy profile
+- `menu_milk_heavy`: milk-heavy profile
+
+**Result:** Queue patterns shift by stage depending on menu composition. In
+espresso-heavy demand, Till pressure dominates. In milk-heavy demand, downstream
+bar workload becomes the primary source of delay.
+
+See [docs/08_menu_dependent_service.md](docs/08_menu_dependent_service.md) for
+the detailed setup, metrics, and stage-level time-series plots.
+
+---
+
+## Scenario 8 - Healthcare Mapping
+
+This scenario maps the same serial-queue architecture to a healthcare flow:
+
+```
+Arrival -> Triage -> Diagnostics -> Treatment -> Discharge
+```
+
+Configured scenarios:
+
+- `healthcare_baseline`: reference staffing/capacity
+- `healthcare_peak_ed`: peak-hour demand surge
+- `healthcare_extra_triage`: additional triage capacity intervention
+
+**Result:** The same bottleneck dynamics hold. Under peak demand, queues and
+waiting increase nonlinearly while throughput gains are limited by the slowest
+downstream stage. Targeted upstream capacity can reduce queue growth but does
+not eliminate downstream constraints.
+
+See [docs/09_healthcare_mapping.md](docs/09_healthcare_mapping.md) for full
+parameter mapping, results table, and interpretation.
+
+---
+
 # Key Insight
 
 ## Bottleneck Principle
