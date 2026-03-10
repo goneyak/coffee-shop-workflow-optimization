@@ -188,6 +188,9 @@ Possible real-world mechanisms include:
 
 **Result:** ~30–35% reduction in congestion.
 
+See [docs/scenario_01_improved_till.md](docs/scenario_01_improved_till.md) for
+scenario-specific setup and KPI summary.
+
 ---
 
 ## Scenario 2 — Full Workflow Improvement
@@ -195,6 +198,9 @@ Possible real-world mechanisms include:
 This scenario increases service rates at all stages.
 
 **Result:** Additional improvements occur, but with diminishing returns once the upstream bottleneck is relieved.
+
+See [docs/scenario_02_full_improvement.md](docs/scenario_02_full_improvement.md)
+for scenario-specific setup and KPI summary.
 
 ---
 
@@ -205,6 +211,9 @@ This scenario explores system behavior under lunch-hour rush conditions (0-3hr: 
 **Note on realism:** At 120/hr arrival rate, real systems experience customer abandonment (balking/reneging). This scenario shows theoretical system limits without behavioral constraints—a common approach in operations research to quantify structural bottleneck severity.
 
 **Result:** Queue length grows 3.6× to 51 customers while throughput drops only 7% (57.9→54.0), demonstrating that demand spikes primarily create waiting rather than increased service capacity.
+
+See [docs/03_peak_arrivals.md](docs/03_peak_arrivals.md) for detailed
+assumptions and interpretation.
 
 ---
 
@@ -240,6 +249,9 @@ We use a smaller `dt` in stress tests to reduce discretization artifacts under h
 - Call centers: Customer wait time reflects overall system load, not just visible queue
 
 **Implication:** Reducing visible queue alone (e.g., through preorder buffers) doesn't reduce operational stress; it redistributes congestion upstream. True improvement requires addressing the throughput ceiling.
+
+See [docs/04_visible_queue.md](docs/04_visible_queue.md) for full decomposition
+and notes.
 
 ---
 
@@ -283,6 +295,9 @@ highlighting that capacity is limited by the slowest stage (here μ₂ at Milk).
 expected queue lengths without changing the underlying service rates. The
 results here mirror classic M/M/c queueing behavior: as utilization per server
 decreases, both variability and queueing delay drop sharply.
+
+See [docs/06_multi_server.md](docs/06_multi_server.md) for full experiment
+details and server-level metrics.
 
 ---
 

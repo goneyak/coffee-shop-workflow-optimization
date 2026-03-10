@@ -29,6 +29,23 @@ eliminates the regular shots queue altogether (`avg_q1` drops to 0). Throughput
 remains unchanged at ≈57.9 orders/hour because the milk station remains the
 ultimate bottleneck.
 
+| Scenario | mean_avg_queue | mean_throughput (/h) | mean_wait_approx (h) | mean_q0 | mean_q1 | mean_q2 |
+|---|---:|---:|---:|---:|---:|---:|
+| preorder_buffer_small | 12.019 | 57.897 | 0.208 | 8.714 | 0.000 | 3.306 |
+| preorder_buffer_large | 12.019 | 57.897 | 0.208 | 8.714 | 0.000 | 3.306 |
+
+Current note:
+- In the current implementation and parameterization, small/large buffer
+  settings produce identical aggregate KPI outputs.
+
+## Visualization
+
+![Scenario Comparison](../results/scenario_comparison.png)
+
+Related result files:
+- `results/preorder_buffer_small/summary.csv`
+- `results/preorder_buffer_large/summary.csv`
+
 ### Takeaways
 - Preorder buffering redistributes rather than removes congestion; it does not
   raise the system's capacity limit.

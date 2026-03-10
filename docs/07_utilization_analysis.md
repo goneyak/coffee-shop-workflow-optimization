@@ -83,6 +83,13 @@ L = ρ / (1 − ρ)
 Our simulation should approximate this curve, confirming that the three-stage
 serial model exhibits classic queueing behavior at the aggregate level.
 
+## Visualization
+
+![Utilization Curve](../results/utilization_curve.png)
+
+Related result file:
+- `results/utilization_summary.csv`
+
 ## Next
 
 - Compare simulation results against theoretical M/M/1 formula

@@ -36,6 +36,13 @@ During lunch rush:
 
 This explains why baristas feel overwhelmed even when the visible line seems manageable.
 
+## Visualization
+
+![Peak Arrivals Queue Over Time](../results/peak_arrivals_queue_plot.png)
+
+Related result file:
+- `results/visible_queue/summary.csv`
+
 ## Next
 - Multi-server staffing at Till
 - Explore interplay with pipeline/preorder policy (see docs/05_preorder_buffer.md)

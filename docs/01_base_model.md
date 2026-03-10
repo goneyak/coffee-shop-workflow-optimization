@@ -22,6 +22,10 @@ Arrival → Till → Shots → Milk → Exit  (each station can have c≥1 serve
 - `src/experiments.py`: scenario runner + summary aggregation
 - `src/config.py` or `configs/*.yaml`: parameters
 
+## Visualization
+
+![System Scheme](../results/system_scheme.png)
+
 ## Known limitations
 - constant λ (no peak)
 - single-server

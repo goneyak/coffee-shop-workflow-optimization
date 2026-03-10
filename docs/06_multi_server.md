@@ -33,6 +33,15 @@ also declined (peak q0 from 25.9 to 5.18).
 - Throughput itself slightly increases with additional staff as the system
   operates closer to capacity, but it remains bounded by the slowest stage.
 
+## Visualization
+
+![Multi-Server Till Comparison](../results/multi_server_lineplot.png)
+
+Related result files:
+- `results/multi_server_1/summary.csv`
+- `results/multi_server_2/summary.csv`
+- `results/multi_server_3/summary.csv`
+
 ## Interpretation goal
 Quantify how many servers are needed to keep q0 below a target level during peaks.
 
