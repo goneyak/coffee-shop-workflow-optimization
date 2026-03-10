@@ -6,6 +6,7 @@ import pandas as pd
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
 import yaml
 import sys
 
@@ -250,6 +251,300 @@ def plot_utilization_curve():
     print("✓ results/utilization_curve.png")
 
 
+# ── 7. 전체 구조 스킴 (개념도) ───────────────────────────────────────────────
+def plot_system_scheme():
+    fig, ax = plt.subplots(figsize=(14, 8), dpi=200)
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    ax.axis("off")
+
+    panel = FancyBboxPatch(
+        (0.02, 0.04), 0.96, 0.92,
+        boxstyle="round,pad=0.01,rounding_size=0.02",
+        linewidth=1.0,
+        edgecolor="#cbd5e1",
+        facecolor="#f8fafc",
+    )
+    ax.add_patch(panel)
+
+    ax.text(
+        0.05, 0.93,
+        "Coffee Shop Workflow Simulation - End-to-End Scheme",
+        fontsize=18,
+        fontweight="bold",
+        color="#0f172a",
+        ha="left",
+        va="center",
+    )
+    ax.text(
+        0.05, 0.895,
+        "Arrival model -> 3-stage queues -> scenario levers -> KPIs",
+        fontsize=10,
+        color="#475569",
+        ha="left",
+        va="center",
+    )
+
+    def add_box(x, y, w, h, title, body, edge="#2563eb"):
+        box = FancyBboxPatch(
+            (x, y), w, h,
+            boxstyle="round,pad=0.01,rounding_size=0.018",
+            linewidth=1.3,
+            edgecolor=edge,
+            facecolor="white",
+        )
+        ax.add_patch(box)
+        ax.text(x + 0.015, y + h - 0.028, title, fontsize=11, fontweight="bold", color=edge, ha="left", va="top")
+        ax.text(x + 0.015, y + h - 0.067, body, fontsize=9, color="#1f2937", ha="left", va="top")
+
+    def add_arrow(x1, y1, x2, y2, color="#334155"):
+        arrow = FancyArrowPatch(
+            (x1, y1), (x2, y2),
+            arrowstyle="-|>",
+            mutation_scale=14,
+            linewidth=1.6,
+            color=color,
+        )
+        ax.add_patch(arrow)
+
+    add_box(0.06, 0.62, 0.18, 0.19, "1) Arrivals", "- base lambda\n- peak profile\n- dt=0.005h")
+    add_box(0.29, 0.62, 0.18, 0.19, "2) Till (q0)", "- service mu0\n- server count c0\n- multi-server test")
+    add_box(0.52, 0.62, 0.18, 0.19, "3) Shots (q1)", "- service mu1\n- preorder priority\n- queue visibility")
+    add_box(0.75, 0.62, 0.18, 0.19, "4) Milk (q2)", "- service mu2\n- menu-dependent times\n- completion output")
+
+    add_arrow(0.24, 0.71, 0.29, 0.71)
+    add_arrow(0.47, 0.71, 0.52, 0.71)
+    add_arrow(0.70, 0.71, 0.75, 0.71)
+
+    add_box(
+        0.06, 0.29, 0.56, 0.24,
+        "Scenario Levers (YAML)",
+        "- baseline / improved_till / full_improvement\n"
+        "- peak_arrivals / visible_queue / preorder_buffer\n"
+        "- multi_server_1~3 / menu_* / utilization_*",
+        edge="#0f766e",
+    )
+    add_box(
+        0.66, 0.29, 0.27, 0.24,
+        "Outputs and Metrics",
+        "- mean_avg_queue, mean_q0/q1/q2\n"
+        "- mean_throughput\n"
+        "- 300-run Monte Carlo summary\n"
+        "- figures/*.png + results/*/summary.csv",
+        edge="#7c3aed",
+    )
+
+    add_arrow(0.38, 0.62, 0.33, 0.53, color="#0f766e")
+    add_arrow(0.62, 0.62, 0.75, 0.53, color="#7c3aed")
+
+    ax.text(
+        0.06, 0.13,
+        "Key insight: congestion escalates near high utilization due to system structure, not individual worker performance.",
+        fontsize=10,
+        color="#111827",
+        ha="left",
+        va="center",
+    )
+
+    os.makedirs("results", exist_ok=True)
+    plt.savefig("results/system_scheme.png", bbox_inches="tight")
+    plt.close()
+    print("✓ results/system_scheme.png")
+
+
+# ── 8. 메뉴 시나리오 시계열 + 비교 플롯 ───────────────────────────────────────
+def plot_menu_timeseries_comparison():
+    scenario_configs = {
+        "menu_normal_mix": "configs/menu_normal_mix.yaml",
+        "menu_quick_drinks": "configs/menu_quick_drinks.yaml",
+        "menu_milk_heavy": "configs/menu_milk_heavy.yaml",
+    }
+
+    colors = {
+        "menu_normal_mix": "#1f77b4",
+        "menu_quick_drinks": "#2ca02c",
+        "menu_milk_heavy": "#d62728",
+    }
+
+    series_map = {}
+
+    for name, cfg_path in scenario_configs.items():
+        with open(cfg_path, "r") as f:
+            cfg = yaml.safe_load(f)
+
+        menu_config = {
+            "menu_mix": cfg["menu_mix"],
+            "modifiers": cfg["modifiers"],
+            "service_times_hours": cfg["service_times_hours"],
+        }
+
+        peak_profile = cfg.get("arrival", {}).get("peak_profile")
+        if cfg.get("arrival", {}).get("type") == "constant":
+            arrival_rate = cfg["arrival"]["lambda_per_hour"]
+        else:
+            arrival_rate = cfg.get("arrival", {}).get("lambda_per_hour", 60)
+
+        staff = cfg.get("staffing", {})
+        servers = (
+            int(staff.get("till_servers", 1)),
+            int(staff.get("shots_servers", 1)),
+            int(staff.get("milk_servers", 1)),
+        )
+
+        out = simulate(
+            arrival_rate=arrival_rate,
+            mu0=65,
+            mu1=85,
+            mu2=75,
+            sim_time_hours=float(cfg["sim_time_hours"]),
+            dt=float(cfg["dt"]),
+            seed=42,
+            peak_profile=peak_profile,
+            preorder_enabled=False,
+            servers=servers,
+            menu_config=menu_config,
+        )
+
+        t = np.linspace(0, float(cfg["sim_time_hours"]), len(out["queue_series"]))
+        df = pd.DataFrame(
+            {
+                "time_hours": t,
+                "queue_total": out["queue_series"],
+                "queue_till": out["q0_series"],
+                "queue_shots": out["q1_series"],
+                "queue_milk": out["q2_series"],
+            }
+        )
+        os.makedirs(f"results/{name}", exist_ok=True)
+        df.to_csv(f"results/{name}/queue_timeseries.csv", index=False)
+
+        series_map[name] = df
+
+    fig, axes = plt.subplots(2, 1, figsize=(10, 7), sharex=True)
+
+    for name, df in series_map.items():
+        axes[0].plot(
+            df["time_hours"],
+            df["queue_total"],
+            label=name,
+            linewidth=1.5,
+            color=colors[name],
+        )
+        axes[1].plot(
+            df["time_hours"],
+            df["queue_milk"],
+            label=name,
+            linewidth=1.5,
+            color=colors[name],
+        )
+
+    axes[0].set_ylabel("Total Queue")
+    axes[0].set_title("Menu Scenarios: Total Queue Over Time")
+    axes[0].grid(True, alpha=0.3)
+    axes[0].legend(fontsize=8)
+
+    axes[1].set_ylabel("Milk Queue (q2)")
+    axes[1].set_xlabel("Time (hours)")
+    axes[1].set_title("Menu Scenarios: Milk Queue Over Time")
+    axes[1].grid(True, alpha=0.3)
+
+    plt.tight_layout()
+    os.makedirs("results", exist_ok=True)
+    plt.savefig("results/menu_timeseries_comparison.png", dpi=200)
+    plt.close()
+    print("✓ results/menu_timeseries_comparison.png")
+
+
+# ── 9. 헬스케어 시나리오 비교 플롯 ───────────────────────────────────────────
+def plot_healthcare_comparison():
+    scenario_files = {
+        "healthcare_baseline": "results/healthcare_baseline/summary.csv",
+        "healthcare_peak_ed": "results/healthcare_peak_ed/summary.csv",
+        "healthcare_extra_triage": "results/healthcare_extra_triage/summary.csv",
+    }
+
+    rows = []
+    for name, path in scenario_files.items():
+        if not os.path.exists(path):
+            continue
+        df = pd.read_csv(path)
+        rows.append(
+            {
+                "scenario": name,
+                "mean_avg_queue": float(df["mean_avg_queue"].iloc[0]),
+                "std_avg_queue": float(df["std_avg_queue"].iloc[0]),
+                "mean_throughput": float(df["mean_throughput"].iloc[0]),
+                "mean_wait_approx": float(df["mean_wait_approx"].iloc[0]),
+                "mean_q0": float(df["mean_q0"].iloc[0]),
+                "mean_q1": float(df["mean_q1"].iloc[0]),
+                "mean_q2": float(df["mean_q2"].iloc[0]),
+            }
+        )
+
+    if not rows:
+        print("No healthcare summary files found; skipping healthcare plot.")
+        return
+
+    hdf = pd.DataFrame(rows)
+
+    fig, axes = plt.subplots(2, 2, figsize=(12, 8))
+    x = np.arange(len(hdf))
+
+    # A) Total queue + error
+    axes[0, 0].bar(
+        x,
+        hdf["mean_avg_queue"],
+        yerr=hdf["std_avg_queue"],
+        capsize=4,
+        color="#4e79a7",
+    )
+    axes[0, 0].set_title("Average Queue (Total)")
+    axes[0, 0].set_ylabel("Customers in system")
+    axes[0, 0].set_xticks(x)
+    axes[0, 0].set_xticklabels(hdf["scenario"], rotation=20, ha="right", fontsize=8)
+    axes[0, 0].grid(True, axis="y", alpha=0.3)
+
+    # B) Throughput
+    axes[0, 1].bar(x, hdf["mean_throughput"], color="#f28e2b")
+    axes[0, 1].set_title("Throughput")
+    axes[0, 1].set_ylabel("Patients/hour")
+    axes[0, 1].set_xticks(x)
+    axes[0, 1].set_xticklabels(hdf["scenario"], rotation=20, ha="right", fontsize=8)
+    axes[0, 1].grid(True, axis="y", alpha=0.3)
+
+    # C) Stage queues (stacked)
+    axes[1, 0].bar(x, hdf["mean_q0"], label="q0 triage", color="#76b7b2")
+    axes[1, 0].bar(x, hdf["mean_q1"], bottom=hdf["mean_q0"], label="q1 diagnostics", color="#59a14f")
+    axes[1, 0].bar(
+        x,
+        hdf["mean_q2"],
+        bottom=hdf["mean_q0"] + hdf["mean_q1"],
+        label="q2 treatment",
+        color="#e15759",
+    )
+    axes[1, 0].set_title("Per-Stage Queue Composition")
+    axes[1, 0].set_ylabel("Customers")
+    axes[1, 0].set_xticks(x)
+    axes[1, 0].set_xticklabels(hdf["scenario"], rotation=20, ha="right", fontsize=8)
+    axes[1, 0].legend(fontsize=8)
+    axes[1, 0].grid(True, axis="y", alpha=0.3)
+
+    # D) Wait approximation
+    axes[1, 1].bar(x, hdf["mean_wait_approx"] * 60.0, color="#b07aa1")
+    axes[1, 1].set_title("Estimated Time in System")
+    axes[1, 1].set_ylabel("Minutes")
+    axes[1, 1].set_xticks(x)
+    axes[1, 1].set_xticklabels(hdf["scenario"], rotation=20, ha="right", fontsize=8)
+    axes[1, 1].grid(True, axis="y", alpha=0.3)
+
+    fig.suptitle("Healthcare Mapping: Scenario Comparison", fontsize=14, fontweight="bold")
+    plt.tight_layout()
+    os.makedirs("results", exist_ok=True)
+    plt.savefig("results/healthcare_comparison.png", dpi=200)
+    plt.close()
+    print("✓ results/healthcare_comparison.png")
+
+
 def main():
     os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     print("=== Generating all visualizations ===")
@@ -259,6 +554,9 @@ def main():
     plot_server_queue_heatmap()
     plot_scenario_comparison()
     plot_utilization_curve()
+    plot_system_scheme()
+    plot_menu_timeseries_comparison()
+    plot_healthcare_comparison()
     print("\nAll plots saved to results/")
 
 

@@ -23,11 +23,10 @@ menu_mix:
   latte_capp: 0.300
   flavour_latte: 0.100
   hot_choc: 0.050
-  service_times_hours:
   matcha: 0.040
-  batch_brew: 0.050
-  tea: 0.015
-  herbal_tea: 0.015
+  batch_brew: 0.080
+  tea: 0.010
+  herbal_tea: 0.005
   single_origin: 0.005
 
 modifiers:

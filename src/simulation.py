@@ -12,6 +12,9 @@ class Order:
     t_till: float  # Service time at Till (seconds)
     t_shots: float  # Service time at Shots (seconds)
     t_milk: float  # Service time at Milk (seconds)
+    rem_till: float  # Remaining Till work (hours)
+    rem_shots: float  # Remaining Shots work (hours)
+    rem_milk: float  # Remaining Milk work (hours)
 
 
 def lambda_of_time(t_hours, peak_profile=None):
@@ -37,14 +40,18 @@ def sample_order(menu_mix: dict, modifiers: dict, service_times_hours: dict) -> 
     Args:
         menu_mix: dict of {drink_type: probability}
         modifiers: dict of {modifier_name: probability}
-        service_times_seconds: dict of base times and extras for each stage
+        service_times_hours: dict of base times and extras for each stage
     
     Returns:
         Order object with calculated service times
     """
     # Sample drink type
     drinks = list(menu_mix.keys())
-    probs = list(menu_mix.values())
+    probs = np.array(list(menu_mix.values()), dtype=float)
+    prob_sum = float(np.sum(probs))
+    if prob_sum <= 0:
+        raise ValueError("menu_mix probabilities must sum to a positive value")
+    probs = probs / prob_sum
     drink_type = np.random.choice(drinks, p=probs)
     
     # Define which drinks need shots and/or milk
@@ -93,9 +100,9 @@ def sample_order(menu_mix: dict, modifiers: dict, service_times_hours: dict) -> 
     is_complex = sum([is_oat, is_lowfat, is_decaf, is_iced]) > 1
     
     # Calculate Till time
-    shots_cfg = service_times_seconds.get('shots', {})
-    milk_cfg = service_times_seconds.get('milk', {})
-    till_cfg = service_times_seconds.get('till', {})
+    shots_cfg = service_times_hours.get('shots', {})
+    milk_cfg = service_times_hours.get('milk', {})
+    till_cfg = service_times_hours.get('till', {})
     
     t_till = till_cfg.get('base', 12)
     if is_cash:
@@ -145,7 +152,10 @@ def sample_order(menu_mix: dict, modifiers: dict, service_times_hours: dict) -> 
         requires_milk=requires_milk,
         t_till=t_till,
         t_shots=t_shots,
-        t_milk=t_milk
+        t_milk=t_milk,
+        rem_till=t_till,
+        rem_shots=t_shots,
+        rem_milk=t_milk
     )
 
     """
@@ -237,15 +247,20 @@ def simulate(arrival_rate, mu0, mu1, mu2, sim_time_hours, dt, seed=None, peak_pr
             budget = dt * s0
             while budget > 0 and len(q0) > 0:
                 order = q0[0]
-                if order.t_till <= budget:
+                work = min(order.rem_till, budget)
+                order.rem_till -= work
+                budget -= work
+
+                if order.rem_till <= 1e-12:
                     q0.pop(0)
-                    budget -= order.t_till
                     # Route to next stage based on order requirements
-                    if order.requires_shots or order.requires_milk:
+                    if order.requires_shots:
                         if preorder_enabled:
                             preorder_q1.append(order)
                         else:
                             q1.append(order)
+                    elif order.requires_milk:
+                        q2.append(order)
                     else:
                         completed += 1
                 else:
@@ -268,9 +283,12 @@ def simulate(arrival_rate, mu0, mu1, mu2, sim_time_hours, dt, seed=None, peak_pr
             if preorder_enabled and len(preorder_q1) > 0:
                 while budget > 0 and len(preorder_q1) > 0:
                     order = preorder_q1[0]
-                    if order.t_shots <= budget:
+                    work = min(order.rem_shots, budget)
+                    order.rem_shots -= work
+                    budget -= work
+
+                    if order.rem_shots <= 1e-12:
                         preorder_q1.pop(0)
-                        budget -= order.t_shots
                         if order.requires_milk:
                             q2.append(order)
                         else:
@@ -280,9 +298,12 @@ def simulate(arrival_rate, mu0, mu1, mu2, sim_time_hours, dt, seed=None, peak_pr
             # Regular queue (only orders that require shots)
             while budget > 0 and len(q1) > 0:
                 order = q1[0]
-                if order.t_shots <= budget:
+                work = min(order.rem_shots, budget)
+                order.rem_shots -= work
+                budget -= work
+
+                if order.rem_shots <= 1e-12:
                     q1.pop(0)
-                    budget -= order.t_shots
                     if order.requires_milk:
                         q2.append(order)
                     else:
@@ -292,15 +313,30 @@ def simulate(arrival_rate, mu0, mu1, mu2, sim_time_hours, dt, seed=None, peak_pr
         else:
             # Classic mode
             service1 = np.random.poisson(mu1 * dt * s1)
+            if preorder_enabled:
+                # Serve preorder buffer first, then regular q1 with remaining capacity.
+                served_preorder = min(preorder_q1, service1)
+                preorder_q1 -= served_preorder
+                remaining = service1 - served_preorder
+                served_q1 = min(q1, remaining)
+                q1 -= served_q1
+                q2 += (served_preorder + served_q1)
+            else:
+                served1 = min(q1, service1)
+                q1 -= served1
+                q2 += served1
 
         # ===== 4. MILK SERVICE =====
         if use_menu_mode:
             budget = dt * s2
             while budget > 0 and len(q2) > 0:
                 order = q2[0]
-                if order.t_milk <= budget:
+                work = min(order.rem_milk, budget)
+                order.rem_milk -= work
+                budget -= work
+
+                if order.rem_milk <= 1e-12:
                     q2.pop(0)
-                    budget -= order.t_milk
                     completed += 1
                 else:
                     break
@@ -341,6 +377,9 @@ def simulate(arrival_rate, mu0, mu1, mu2, sim_time_hours, dt, seed=None, peak_pr
         "throughput": throughput,
         "completed": completed,
         "queue_series": queue_series,
+        "q0_series": q0_series,
+        "q1_series": q1_series,
+        "q2_series": q2_series,
         "avg_q0": avg_q0,
         "avg_q1": avg_q1,
         "avg_q2": avg_q2,

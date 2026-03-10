@@ -21,5 +21,5 @@
 5. Preorder / pipeline policy (docs/05_preorder_buffer.md) *(implemented as Scenario 5)*
 6. Multi-server Till staffing (docs/06_multi_server.md) *(implemented as Scenario 6)*
 7. Utilization sweep analysis (docs/07_utilization_analysis.md) *(implemented)*
-8. Menu-dependent service times (docs/08_menu_dependent_service.md)
-9. Healthcare ops mapping (docs/09_healthcare_mapping.md)
+8. Menu-dependent service times (docs/08_menu_dependent_service.md) *(implemented as Scenario 7)*
+9. Healthcare ops mapping (docs/09_healthcare_mapping.md) *(implemented as Scenario 8)*

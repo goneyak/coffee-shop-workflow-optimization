@@ -1,0 +1,19 @@
+experiment_name: healthcare_baseline
+sim_time_hours: 12
+dt: 0.005
+runs: 300
+
+arrival:
+  type: constant
+  lambda_per_hour: 26
+
+service:
+  till:
+    servers: 1
+    mu_per_hour: 40   # triage
+  shots:
+    servers: 1
+    mu_per_hour: 34   # diagnostics
+  milk:
+    servers: 1
+    mu_per_hour: 30   # treatment

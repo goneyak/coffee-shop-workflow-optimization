@@ -1,0 +1,2 @@
+scenario,mu0,mu1,mu2,servers_till,servers_shots,servers_milk,mean_avg_queue,std_avg_queue,mean_throughput,std_throughput,mean_wait_approx,mean_q0,mean_q1,mean_q2,mean_peak_q0,mean_peak_total,runs
+healthcare_extra_triage,40,34,30,2,1,1,13.655475,5.370956933518662,25.521111111111114,1.2594933694259351,0.5350658496234053,0.46686805555555566,5.266016666666666,7.922590277777778,5.826666666666667,36.85666666666667,300

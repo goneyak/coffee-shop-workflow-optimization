@@ -165,6 +165,8 @@ Baseline parameters represent the observed workflow structure.
 - **Peak Arrivals** (lunch-hour rush 5-7pm): Demonstrates system fragility under demand spikes; queue grows 3.6× while throughput drops only 7%.
 - **Preorder Buffering** (~14% congestion reduction): Priority handling at the Shots stage can reduce internal queue accumulation while maintaining similar throughput in current settings.
 - **Additional Till servers** (Scenario 6): Adding a second till more than halves system congestion and wait time; a third till yields only marginal extra gain due to downstream bottlenecks. Staffing is therefore a powerful lever for managing utilization.
+- **Menu-dependent service times** (Scenario 7): Different drink mixes produce distinct stage-level bottlenecks (Till-heavy vs Milk-heavy), even under similar demand.
+- **Healthcare mapping extension** (Scenario 8): The same serial-queue structure transfers to triage/diagnostics/treatment flow and supports intervention comparisons.
 
 ---
 
@@ -342,7 +344,7 @@ coffee-shop-workflow-optimization/
 │   ├── simulation.py         # Core discrete-time stochastic simulator
 │   ├── experiments.py        # Monte Carlo experiment runner
 │   ├── config.py             # Baseline scenario parameters
-│   └── plotting.py           # All visualizations (6 chart types)
+│   └── plotting.py           # All visualizations
 ├── configs/
 │   ├── baseline.yaml         # Baseline scenario
 │   ├── improved_till.yaml    # Scenario 1: improved till efficiency
@@ -352,6 +354,7 @@ coffee-shop-workflow-optimization/
 │   ├── preorder_buffer_*.yaml  # Scenario 5: preorder pipeline
 │   ├── multi_server_*.yaml   # Scenario 6: multi-server till (1–3 servers)
 │   ├── menu_*.yaml           # Scenario 7: menu-dependent service times
+│   ├── healthcare_*.yaml     # Scenario 8: healthcare mapping scenarios
 │   └── utilization_*.yaml    # Utilization sweep (ρ = 0.2 → 0.95)
 ├── results/
 │   ├── <scenario>/summary.csv     # Per-scenario Monte Carlo results
@@ -360,7 +363,10 @@ coffee-shop-workflow-optimization/
 │   ├── multi_server_lineplot.png  # Server count vs queue/throughput
 │   ├── peak_arrivals_queue_plot.png # Time-series queue under peak demand
 │   ├── menu_mix_piechart.png      # Menu composition by scenario
+│   ├── menu_timeseries_comparison.png # Stage queue time-series by menu mix
+│   ├── healthcare_comparison.png   # Healthcare scenarios: throughput/queue/wait
 │   ├── server_queue_heatmap.png   # Per-stage queue heatmap
+│   ├── system_scheme.png           # High-level workflow schematic
 │   └── utilization_curve.png      # ρ vs queue & throughput curve
 ├── docs/
 │   ├── 00_project_map.md ... 09_healthcare_mapping.md
@@ -397,7 +403,7 @@ Results are saved per-scenario under `results/<scenario>/summary.csv`.
 python run_plots.py
 ```
 
-Generates 6 visualizations in `results/`:
+Generates visualizations in `results/` (including):
 
 | Plot | Description |
 |------|-------------|
@@ -405,8 +411,11 @@ Generates 6 visualizations in `results/`:
 | `multi_server_lineplot.png` | Queue & throughput by till server count |
 | `peak_arrivals_queue_plot.png` | Time-series queue under peak demand |
 | `menu_mix_piechart.png` | Menu composition (Normal / Milk Heavy / Quick) |
+| `menu_timeseries_comparison.png` | Stage queue time-series comparison by menu mix |
+| `healthcare_comparison.png` | Throughput, queue, and wait across healthcare scenarios |
 | `server_queue_heatmap.png` | Per-stage queue heatmap across scenarios |
 | `utilization_curve.png` | ρ vs queue length & throughput |
+| `system_scheme.png` | High-level workflow/system schematic |
 
 ---
 
@@ -418,6 +427,8 @@ Generates 6 visualizations in `results/`:
 - Preorder buffering (priority queue at Shots stage)
 - Utilization sweep (ρ = 0.2 → 0.95)
 - Visible queue vs system backlog decomposition
+- Menu-dependent service-time scenarios (`menu_*.yaml`)
+- Healthcare mapping scenarios (`healthcare_*.yaml`)
 - 300-run Monte Carlo with confidence intervals
 
 **Implemented but still under active validation:**

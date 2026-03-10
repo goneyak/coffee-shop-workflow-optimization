@@ -1,0 +1,23 @@
+experiment_name: healthcare_peak_ed
+sim_time_hours: 12
+dt: 0.005
+runs: 300
+
+arrival:
+  type: time_varying
+  peak_profile:
+    - [0, 4, 22]
+    - [4, 8, 30]
+    - [8, 10, 36]
+    - [10, 12, 24]
+
+service:
+  till:
+    servers: 1
+    mu_per_hour: 40   # triage
+  shots:
+    servers: 1
+    mu_per_hour: 34   # diagnostics
+  milk:
+    servers: 1
+    mu_per_hour: 30   # treatment

@@ -1,2 +1,2 @@
 scenario,mu0,mu1,mu2,servers_till,servers_shots,servers_milk,mean_avg_queue,std_avg_queue,mean_throughput,std_throughput,mean_wait_approx,mean_q0,mean_q1,mean_q2,mean_peak_q0,mean_peak_total,runs
-menu_milk_heavy,65,85,75,1,1,1,0.0,0.0,73.57375,3.095408135596941,0.0,0.0,0.0,0.0,0.0,0.0,300
+menu_milk_heavy,65,85,75,1,1,1,12.194256250000002,3.9286522594500473,71.36041666666667,2.1228584116331675,0.170882638017108,10.614087499999998,0.37976875,1.2004,47.86666666666667,51.15,300

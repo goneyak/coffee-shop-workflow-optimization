@@ -125,7 +125,7 @@ if __name__ == "__main__":
     
     # Handle menu config first (if present)
     menu_config = None
-    if 'menu_mix' in config and 'modifiers' in config and 'service_times_seconds' in config:
+    if 'menu_mix' in config and 'modifiers' in config and 'service_times_hours' in config:
         menu_config = {
             'menu_mix': config['menu_mix'],
             'modifiers': config['modifiers'],

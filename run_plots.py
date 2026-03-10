@@ -14,6 +14,9 @@ try:
         plot_server_queue_heatmap,
         plot_scenario_comparison,
         plot_utilization_curve,
+        plot_system_scheme,
+        plot_menu_timeseries_comparison,
+        plot_healthcare_comparison,
     )
 
     print("Running plot_multi_server_line...")
@@ -33,6 +36,15 @@ try:
 
     print("Running plot_utilization_curve...")
     plot_utilization_curve()
+
+    print("Running plot_system_scheme...")
+    plot_system_scheme()
+
+    print("Running plot_menu_timeseries_comparison...")
+    plot_menu_timeseries_comparison()
+
+    print("Running plot_healthcare_comparison...")
+    plot_healthcare_comparison()
 
     print("\nDone! Files in results/:")
     for f in sorted(os.listdir("results")):

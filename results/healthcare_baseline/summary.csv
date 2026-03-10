@@ -1,0 +1,2 @@
+scenario,mu0,mu1,mu2,servers_till,servers_shots,servers_milk,mean_avg_queue,std_avg_queue,mean_throughput,std_throughput,mean_wait_approx,mean_q0,mean_q1,mean_q2,mean_peak_q0,mean_peak_total,runs
+healthcare_baseline,40,34,30,1,1,1,10.045558333333332,3.9918685101139295,25.201388888888886,1.3513701006354129,0.3986112978782034,1.8344972222222224,2.9509083333333335,5.260152777777777,10.443333333333333,24.433333333333334,300
